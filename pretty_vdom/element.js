@@ -31,3 +31,4 @@ const createElement =
 
 export const div = createElement("div");
 export const p = createElement("p");
+export const span = createElement("span");
