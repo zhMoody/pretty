@@ -1,15 +1,116 @@
 import { h } from "snabbdom";
 
-// 创建一个智能的元素构造器
+// 解析HTML属性的函数
+const parseAttributes = (content) => {
+  const attributes = {};
+  let textContent = content;
+
+  // 匹配属性的正则表达式
+  const attrRegex = /(\w+)=["']([^"']*?)["']/g;
+  let match;
+
+  while ((match = attrRegex.exec(content)) !== null) {
+    const [fullMatch, attrName, attrValue] = match;
+
+    // 处理不同类型的属性
+    switch (attrName) {
+      case "placeholder":
+        attributes.placeholder = attrValue;
+        break;
+      case "type":
+        attributes.type = attrValue;
+        break;
+      case "value":
+        attributes.value = attrValue;
+        break;
+      case "rows":
+        attributes.rows = parseInt(attrValue) || attrValue;
+        break;
+      case "cols":
+        attributes.cols = parseInt(attrValue) || attrValue;
+        break;
+      case "class":
+        attributes.class = attrValue;
+        break;
+      case "id":
+        attributes.id = attrValue;
+        break;
+      case "style":
+        attributes.style = attrValue;
+        break;
+      case "name":
+        attributes.name = attrValue;
+        break;
+      case "href":
+        attributes.href = attrValue;
+        break;
+      case "src":
+        attributes.src = attrValue;
+        break;
+      case "alt":
+        attributes.alt = attrValue;
+        break;
+      case "title":
+        attributes.title = attrValue;
+        break;
+      case "maxlength":
+        attributes.maxlength = parseInt(attrValue) || attrValue;
+        break;
+      case "minlength":
+        attributes.minlength = parseInt(attrValue) || attrValue;
+        break;
+      case "min":
+        attributes.min = attrValue;
+        break;
+      case "max":
+        attributes.max = attrValue;
+        break;
+      case "step":
+        attributes.step = attrValue;
+        break;
+      case "for":
+        attributes.for = attrValue;
+        break;
+      default:
+        attributes[attrName] = attrValue;
+    }
+
+    // 从文本内容中移除已解析的属性
+    textContent = textContent.replace(fullMatch, "");
+  }
+
+  // 处理布尔属性（没有值的属性）
+  const booleanAttrs = [
+    "disabled",
+    "readonly",
+    "checked",
+    "selected",
+    "required",
+    "autofocus",
+    "multiple",
+  ];
+  booleanAttrs.forEach((attr) => {
+    const boolRegex = new RegExp(`\\b${attr}\\b`);
+    if (boolRegex.test(textContent)) {
+      attributes[attr] = true;
+      textContent = textContent.replace(boolRegex, "");
+    }
+  });
+
+  return {
+    attributes,
+    textContent: textContent.trim(),
+  };
+};
+
+// 创建元素的函数
 const createElement = (tagName) => {
   return (strings, ...args) => {
     let content = "";
     let eventHandlers = {};
-    let attributes = {};
 
-    // 处理模板字符串和插值
+    // 处理模板字符串
     if (Array.isArray(strings)) {
-      // 这是模板字符串调用: div`content ${value}`
       for (let i = 0; i < strings.length; i++) {
         content += strings[i];
 
@@ -24,7 +125,7 @@ const createElement = (tagName) => {
               }
             });
           } else if (arg && typeof arg === "object" && arg.type === "element") {
-            // 嵌套元素，添加到内容中
+            // 嵌套元素 - 暂时用占位符
             content += `[NESTED_ELEMENT_${i}]`;
           } else {
             // 普通值
@@ -33,22 +134,20 @@ const createElement = (tagName) => {
         }
       }
     } else {
-      // 直接调用: div("content")
+      // 直接调用
       content = strings || "";
     }
 
-    // 构建props对象
-    const props = { ...attributes };
-    if (Object.keys(eventHandlers).length > 0) {
-      props.on = eventHandlers;
-    }
+    // 解析HTML属性
+    const parsed = parseAttributes(content);
+    const attributes = parsed.attributes;
+    let textContent = parsed.textContent;
 
     // 处理嵌套元素
-    let children = [];
-    if (content) {
-      // 检查是否有嵌套元素标记
-      const nestedElements = [];
-      let processedContent = content;
+    const children = [];
+    if (textContent) {
+      // 检查是否有嵌套元素占位符
+      let processedContent = textContent;
 
       for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -62,26 +161,44 @@ const createElement = (tagName) => {
               index + placeholder.length,
             );
 
-            if (before) children.push(before);
+            if (before.trim()) children.push(before.trim());
             children.push(arg.template);
             processedContent = after;
           }
         }
       }
 
-      if (processedContent) {
-        children.push(processedContent);
+      if (processedContent.trim()) {
+        children.push(processedContent.trim());
       }
 
-      // 如果没有嵌套元素，直接使用content作为文本
-      if (children.length === 0 && content.trim()) {
-        children = content.trim();
+      // 如果没有嵌套元素，直接使用文本内容
+      if (children.length === 0 && textContent.trim()) {
+        children.push(textContent.trim());
       }
     }
 
+    // 构建Snabbdom的props对象
+    const props = {};
+
+    // 添加HTML属性
+    if (Object.keys(attributes).length > 0) {
+      props.attrs = attributes;
+    }
+
+    // 添加事件处理器
+    if (Object.keys(eventHandlers).length > 0) {
+      props.on = eventHandlers;
+    }
+
+    // 返回虚拟DOM节点
     return {
       type: "element",
-      template: h(tagName, props, children),
+      template: h(
+        tagName,
+        props,
+        children.length > 0 ? children : textContent || "",
+      ),
     };
   };
 };

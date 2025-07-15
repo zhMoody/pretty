@@ -1,6 +1,7 @@
 import { init as snabbdomInit, h } from "snabbdom";
 import { eventListenersModule } from "snabbdom/build/modules/eventlisteners";
-const patch = snabbdomInit([eventListenersModule]);
+import { attributesModule } from "snabbdom/build/modules/attributes";
+const patch = snabbdomInit([eventListenersModule, attributesModule]);
 
 // 存储当前活跃的组件实例
 let activeComponentVnode = null;

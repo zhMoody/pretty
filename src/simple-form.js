@@ -9,7 +9,7 @@ import {
   p,
   strong,
 } from "../pretty_vdom/element";
-import { onSubmit, onInput, onChange, onClick } from "../pretty_vdom/event";
+import { onInput, onClick } from "../pretty_vdom/event";
 
 const methods = {
   updateField: (state, field, value) => ({
@@ -68,7 +68,7 @@ const initialState = {
 const template = ({ formData, errors, submitted, methods }) => {
   if (submitted) {
     return div`
-      ${h2`提交成功！`}
+      ${h2`✅ 提交成功！`}
       ${p`感谢您的留言，我们会尽快回复您。`}
       ${button`${onClick(() => methods.resetForm())} 提交新的消息`}
     `;
@@ -77,37 +77,32 @@ const template = ({ formData, errors, submitted, methods }) => {
   return div`
     ${h2`📞 联系我们`}
 
-    ${div`
-      ${label`姓名:`}
-      ${input`${onInput((e) => methods.updateField("name", e.target.value))} type="text" value="${formData.name}" placeholder="请输入您的姓名"`}
-      ${errors.name ? p`${strong`错误: ${errors.name}`}` : ""}
-    `}
+    ${label`for="name-input" 姓名:`}
+    ${input`${onInput((e) => methods.updateField("name", e.target.value))} type="text" id="name-input" placeholder="请输入您的姓名" value="${formData.name}"`}
+    ${errors.name ? p`${strong`❌ ${errors.name}`}` : ""}
 
-    ${div`
-      ${label`邮箱:`}
-      ${input`${onInput((e) => methods.updateField("email", e.target.value))} type="email" value="${formData.email}" placeholder="请输入您的邮箱"`}
-      ${errors.email ? p`${strong`错误: ${errors.email}`}` : ""}
-    `}
+    ${label`for="email-input" 邮箱:`}
+    ${input`${onInput((e) => methods.updateField("email", e.target.value))} type="email" id="email-input" placeholder="请输入您的邮箱" value="${formData.email}"`}
+    ${errors.email ? p`${strong`❌ ${errors.email}`}` : ""}
 
-    ${div`
-      ${label`消息:`}
-      ${textarea`${onInput((e) => methods.updateField("message", e.target.value))} placeholder="请输入您的消息" rows="4"${formData.message}`}
-      ${errors.message ? p`${strong`错误: ${errors.message}`}` : ""}
-    `}
+    ${label`for="message-input" 消息:`}
+    ${textarea`${onInput((e) => methods.updateField("message", e.target.value))} id="message-input" placeholder="请输入您的消息" rows="4"`}${formData.message}
+    ${errors.message ? p`${strong`❌ ${errors.message}`}` : ""}
 
-    ${div`
-      ${button`${onClick((e) => {
-        e.preventDefault();
-        methods.submitForm();
-      })} 发送消息`}
-    `}
+    ${button`${onClick(() => methods.submitForm())} 📤 发送消息`}
 
-    ${div`
-      ${p`表单状态:`}
-      ${p`姓名: ${formData.name || "未填写"}`}
-      ${p`邮箱: ${formData.email || "未填写"}`}
-      ${p`消息: ${formData.message ? "已填写" : "未填写"}`}
-    `}
+    ${h2`📊 当前表单状态`}
+    ${p`姓名: ${formData.name || "未填写"}`}
+    ${p`邮箱: ${formData.email || "未填写"}`}
+    ${p`消息: ${formData.message ? "已填写" : "未填写"}`}
+
+    ${h2`🔧 技术特性展示`}
+    ${p`✅ HTML属性解析：placeholder、type、rows等`}
+    ${p`✅ 表单输入事件：onInput实时响应`}
+    ${p`✅ 数据验证：必填项和格式检查`}
+    ${p`✅ 错误处理：实时错误提示`}
+    ${p`✅ 状态管理：统一的状态更新`}
+    ${p`✅ 条件渲染：成功页面切换`}
   `;
 };
 
