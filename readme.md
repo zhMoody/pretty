@@ -463,16 +463,12 @@ npm run build
 
 ## 📞 联系我们
 
-- 🐛 [报告问题](https://github.com/your-username/pretty-vdom/issues)
-- 💡 [功能建议](https://github.com/your-username/pretty-vdom/discussions)
-- 📧 邮箱: your-email@example.com
-
----
+- 🐛 [报告问题](https://https://github.com/zhMoody/pretty/issues)
 
 <div align="center">
 
 **如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**
 
-Made with ❤️ by PrettyVDOM Team
+Made with ❤️ by zhMoody
 
 </div>
