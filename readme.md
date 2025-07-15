@@ -463,7 +463,7 @@ npm run build
 
 ## 📞 联系我们
 
-- 🐛 [报告问题](https://https://github.com/zhMoody/pretty/issues)
+- 🐛 [报告问题](https://github.com/zhMoody/pretty/issues)
 
 <div align="center">
 
