@@ -6,10 +6,16 @@
     "dev": "vite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "virtual-dom",
+    "framework",
+    "component",
+    "vdom",
+    "javascript"
+  ],
+  "author": "PrettyVDOM Team",
+  "license": "MIT",
+  "description": "一个优雅简洁的虚拟DOM框架，提供组件化开发和高性能渲染",
   "dependencies": {
     "snabbdom": "^3.6.2",
     "vite": "^7.0.4"

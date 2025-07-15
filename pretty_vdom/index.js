@@ -1,43 +1,82 @@
-import * as snabbdom from "snabbdom";
+import { init as snabbdomInit, h } from "snabbdom";
 import { eventListenersModule } from "snabbdom/build/modules/eventlisteners";
-const patch = snabbdom.init([eventListenersModule]);
+const patch = snabbdomInit([eventListenersModule]);
+
+// 存储当前活跃的组件实例
+let activeComponentVnode = null;
 
 export const init = (selector, component) => {
   const app = document.querySelector(selector);
-  patch(app, component.template);
-};
+  const componentInstance = component();
+  activeComponentVnode = patch(app, componentInstance.template);
 
-let state = {};
+  // 将更新函数绑定到组件实例
+  if (componentInstance.update) {
+    componentInstance.setupUpdate(activeComponentVnode);
+  }
+};
 
 export const createComponent = ({
   template,
   methods = {},
   initialState = {},
 }) => {
-  state = initialState;
-  let previous;
+  let componentState = initialState;
+  let currentVnode = null;
 
-  const mappedMethods = (props) =>
-    Object.keys(methods).reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: (...args) => {
-          state = methods[key](state, ...args);
-          const nextNode = template({
-            ...props,
-            ...state,
-            methods: mappedMethods(props),
-          });
-          patch(previous.template, nextNode.template);
-          previous = nextNode; // this prints "Thomas" as firstName :D
-          return state;
-        },
-      }),
-      {},
-    );
+  // 更新函数
+  const updateComponent = () => {
+    const newRendered = template({
+      ...componentState,
+      methods: mappedMethods,
+    });
 
-  return (props) => {
-    previous = template({ ...props, ...state, methods: mappedMethods(props) });
-    return previous;
+    if (currentVnode && newRendered.template) {
+      currentVnode = patch(currentVnode, newRendered.template);
+    }
   };
+
+  const mappedMethods = Object.keys(methods).reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: (...args) => {
+        console.log(`Method ${key} called with args:`, args);
+        componentState = methods[key](componentState, ...args);
+        console.log(`New state:`, componentState);
+        updateComponent();
+        return componentState;
+      },
+    }),
+    {},
+  );
+
+  return (props = {}) => {
+    // 合并props到初始状态
+    componentState = { ...componentState, ...props };
+
+    const rendered = template({
+      ...componentState,
+      methods: mappedMethods,
+    });
+
+    return {
+      template: rendered.template,
+      state: componentState,
+      methods: mappedMethods,
+      update: updateComponent,
+      setupUpdate: (vnode) => {
+        currentVnode = vnode;
+      },
+    };
+  };
+};
+
+// 导出数组渲染辅助函数
+export const renderList = (items, renderFn) => {
+  return items.map(renderFn).join("");
+};
+
+// 导出条件渲染辅助函数
+export const when = (condition, content) => {
+  return condition ? content : "";
 };
